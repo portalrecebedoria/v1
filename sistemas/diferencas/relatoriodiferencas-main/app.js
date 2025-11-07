@@ -15,8 +15,6 @@ import {
     serverTimestamp
 } from "./firebaseConfig.js";
 
-
-
 /* ============================================================
    INICIALIZAÇÃO GERAL
 ============================================================ */
@@ -46,14 +44,13 @@ document.addEventListener("DOMContentLoaded", () => {
         configurarInterface(IS_ADMIN);
         await popularSelects(IS_ADMIN);
         inicializarEventos(IS_ADMIN, MATRICULA);
+        inicializarFiltros(IS_ADMIN, MATRICULA);
 
         await carregarRelatoriosModal(IS_ADMIN, MATRICULA);
 
         carregarResumoMensal(IS_ADMIN);
     });
 });
-
-
 
 /* ============================================================
    ATUALIZADOR AUTOMÁTICO SOBRA/FALTA
@@ -75,8 +72,6 @@ function configurarAutoSobra() {
     d.addEventListener("input", update);
 }
 
-
-
 /* ============================================================
    CONTROLE ADMIN/USER
 ============================================================ */
@@ -84,8 +79,6 @@ function configurarInterface(admin) {
     document.querySelectorAll(".admin-only").forEach(el => el.hidden = !admin);
     document.querySelectorAll(".user-only").forEach(el => el.hidden = admin);
 }
-
-
 
 /* ============================================================
    POPULAR SELECTS DE MATRÍCULA
@@ -123,8 +116,6 @@ async function popularSelects(admin) {
     });
 }
 
-
-
 /* ============================================================
    EVENTOS
 ============================================================ */
@@ -141,7 +132,7 @@ function inicializarEventos(admin, matricula) {
             document.getElementById("modalRelatorios").showModal();
         });
 
-    // FECHAR MODAL DE RESUMO
+    // FECHAR RESUMO (só no rodapé)
     document.getElementById("btnFecharResumo")
         ?.addEventListener("click", () =>
             document.getElementById("modalResumo").close()
@@ -156,13 +147,28 @@ function inicializarEventos(admin, matricula) {
         ?.addEventListener("click", () =>
             document.getElementById("resumoWrap").classList.toggle("collapsed")
         );
-
-    // FILTRO POR DATA
-    document.getElementById("btnFiltrarPorData")
-        ?.addEventListener("click", () => filtrarPorData(admin, matricula));
 }
 
+/* ============================================================
+   FILTROS
+============================================================ */
+function inicializarFiltros(admin, matricula) {
+    const filtroMat = document.getElementById("filtroMatricula");
+    if (filtroMat) {
+        filtroMat.addEventListener("change", async () => {
+            const filtroData = document.getElementById("filtroDataGlobal").value || null;
+            await carregarRelatoriosModal(admin, filtroMat.value || null, filtroData);
+        });
+    }
 
+    const filtroData = document.getElementById("filtroDataGlobal");
+    if (filtroData) {
+        filtroData.addEventListener("change", async () => {
+            const filtroMatricula = filtroMat ? filtroMat.value || null : matricula;
+            await carregarRelatoriosModal(admin, filtroMatricula, filtroData.value || null);
+        });
+    }
+}
 
 /* ============================================================
    SALVAR RELATÓRIO
@@ -204,18 +210,29 @@ async function salvarRelatorio(admin) {
         });
 
         alert("Relatório salvo!");
+
+        // Limpar campos para próximo lançamento
+        document.getElementById("matriculaForm").value = "";
+        document.getElementById("dataCaixa").value = "";
+        document.getElementById("valorFolha").value = "";
+        document.getElementById("valorDinheiro").value = "";
+        document.getElementById("sobraFalta").value = "";
+        document.getElementById("abastecimento").value = "";
+        document.getElementById("observacao").value = "";
+
+        // Atualizar lista
+        await carregarRelatoriosModal(admin, matricula);
+
     } catch (e) {
         console.error(e);
         alert("Erro ao salvar.");
     }
 }
 
-
-
 /* ============================================================
-   CARREGAR RELATÓRIOS NO MODAL PRINCIPAL
+   CARREGAR RELATÓRIOS MODAL
 ============================================================ */
-async function carregarRelatoriosModal(admin, userMatricula) {
+async function carregarRelatoriosModal(admin, filtroMatricula = null, filtroData = null) {
 
     const div = document.getElementById("listaRelatoriosModal");
     if (!div) return;
@@ -223,45 +240,41 @@ async function carregarRelatoriosModal(admin, userMatricula) {
     div.innerHTML = "<p>Carregando...</p>";
 
     let q;
-
     if (admin) {
-        q = query(collection(db, "relatorios"), orderBy("criadoEm", "desc"));
+        q = query(collection(db, "relatorios"), orderBy("dataCaixa", "desc"));
     } else {
-        q = query(
-            collection(db, "relatorios"),
-            where("matricula", "==", userMatricula),
-            orderBy("criadoEm", "desc")
-        );
+        q = query(collection(db, "relatorios"), where("matricula", "==", filtroMatricula), orderBy("dataCaixa", "desc"));
     }
 
     const snap = await getDocs(q);
-
     div.innerHTML = "";
 
     snap.forEach(docSnap => {
         const r = docSnap.data();
         const id = docSnap.id;
 
-        const posAlerta = r.posEditado ? `<span class="alerta-pos">⚠️ Pós Conferência</span>` : "";
+        // Normaliza data
+        const dataObj = r.dataCaixa.toDate ? r.dataCaixa.toDate() : new Date(r.dataCaixa);
+        const dataStr = `${dataObj.getFullYear()}-${(dataObj.getMonth() + 1).toString().padStart(2, "0")}-${dataObj.getDate().toString().padStart(2, "0")}`;
 
-        const data = r.dataCaixa.toDate
-            ? r.dataCaixa.toDate().toLocaleDateString()
-            : new Date(r.dataCaixa).toLocaleDateString();
+        // Filtrar por data
+        if (filtroData && filtroData !== dataStr) return;
+
+        // Filtrar por matrícula
+        if (admin && filtroMatricula && r.matricula !== filtroMatricula) return;
+
+        const posAlerta = r.posEditado ? `<span class="alerta-pos">⚠️ Pós Conferência</span>` : "";
 
         const item = document.createElement("div");
         item.className = "relatorio-item";
 
         item.innerHTML = `
             <div class="item-header">
-                <strong>${data}</strong> — Matrícula: ${r.matricula}
-                ${posAlerta}
-
+                <strong>${dataObj.toLocaleDateString()}</strong> — Matrícula: ${r.matricula} ${posAlerta}
                 <button class="btn outline btnVer" data-id="${id}">Ver Detalhes</button>
             </div>
-
             <div class="actions">
                 <button class="btn outline btnPos" data-id="${id}">Pós-Conferência</button>
-
                 ${admin ? `
                     <button class="btn primary btnEdit" data-id="${id}">Editar</button>
                     <button class="btn danger btnExcluir" data-id="${id}">Excluir</button>
@@ -272,32 +285,26 @@ async function carregarRelatoriosModal(admin, userMatricula) {
         div.appendChild(item);
     });
 
-    ativarEventosLista(admin, userMatricula);
+    ativarEventosLista(admin, filtroMatricula);
 }
-
-
 
 /* ============================================================
    ATIVAR EVENTOS DA LISTA
 ============================================================ */
 function ativarEventosLista(admin, matricula) {
 
-    // VER DETALHES
     document.querySelectorAll(".btnVer").forEach(btn => {
         btn.addEventListener("click", () => abrirResumo(btn.dataset.id));
     });
 
-    // PÓS-CONFERÊNCIA
     document.querySelectorAll(".btnPos").forEach(btn => {
         btn.addEventListener("click", () => abrirPosConferencia(btn.dataset.id, admin));
     });
 
-    // EDITAR
     document.querySelectorAll(".btnEdit").forEach(btn => {
         btn.addEventListener("click", () => editarRelatorio(btn.dataset.id));
     });
 
-    // EXCLUIR
     document.querySelectorAll(".btnExcluir").forEach(btn => {
         btn.addEventListener("click", async () => {
 
@@ -314,8 +321,6 @@ function ativarEventosLista(admin, matricula) {
     });
 }
 
-
-
 /* ============================================================
    MODAL FLUTUANTE — VER DETALHES
 ============================================================ */
@@ -325,9 +330,7 @@ async function abrirResumo(id) {
     const conteudo = document.getElementById("conteudoResumo");
 
     const snap = await getDoc(doc(db, "relatorios", id));
-
     if (!snap.exists()) return;
-
     const r = snap.data();
 
     const classe = r.sobraFalta >= 0 ? "positivo" : "negativo";
@@ -351,8 +354,6 @@ async function abrirResumo(id) {
 
     modal.showModal();
 }
-
-
 
 /* ============================================================
    PÓS-CONFERÊNCIA
@@ -386,8 +387,6 @@ async function abrirPosConferencia(id, admin) {
     modal.showModal();
 }
 
-
-
 /* ============================================================
    EDITAR RELATÓRIO
 ============================================================ */
@@ -413,8 +412,6 @@ async function editarRelatorio(id) {
 
     alert("Atualizado!");
 }
-
-
 
 /* ============================================================
    RESUMO MENSAL DO ADMIN
@@ -475,74 +472,4 @@ async function carregarResumoMensal(admin) {
         <details><summary>Dias com sobra</summary>${pos.join("<br>") || "-"}</details>
         <details><summary>Dias com falta</summary>${neg.join("<br>") || "-"}</details>
     `;
-}
-
-
-
-/* ============================================================
-   FILTRO POR DATA DENTRO DO MODAL
-============================================================ */
-async function filtrarPorData(admin, matricula) {
-
-    const dataFiltro = document.getElementById("filtroDataGlobal").value;
-
-    if (!dataFiltro)
-        return carregarRelatoriosModal(admin, matricula);
-
-    const alvo = new Date(dataFiltro).toLocaleDateString();
-
-    const div = document.getElementById("listaRelatoriosModal");
-    div.innerHTML = "<p>Filtrando...</p>";
-
-    let q;
-    if (admin) {
-        q = query(collection(db, "relatorios"), orderBy("criadoEm", "desc"));
-    } else {
-        q = query(
-            collection(db, "relatorios"),
-            where("matricula", "==", matricula),
-            orderBy("criadoEm", "desc")
-        );
-    }
-
-    const snap = await getDocs(q);
-
-    div.innerHTML = "";
-
-    snap.forEach(docSnap => {
-
-        const r = docSnap.data();
-        const id = docSnap.id;
-
-        const data = r.dataCaixa.toDate
-            ? r.dataCaixa.toDate().toLocaleDateString()
-            : new Date(r.dataCaixa).toLocaleDateString();
-
-        if (data !== alvo) return;
-
-        const alerta = r.posEditado ? `<span class="alerta-pos">⚠️ Pós Conferência</span>` : "";
-
-        const item = document.createElement("div");
-        item.className = "relatorio-item";
-
-        item.innerHTML = `
-            <div class="item-header">
-                <strong>${data}</strong> — Matrícula: ${r.matricula} ${alerta}
-                <button class="btn outline btnVer" data-id="${id}">Ver Detalhes</button>
-            </div>
-
-            <div class="actions">
-                <button class="btn outline btnPos" data-id="${id}">Pós-Conferência</button>
-
-                ${admin ? `
-                    <button class="btn primary btnEdit" data-id="${id}">Editar</button>
-                    <button class="btn danger btnExcluir" data-id="${id}">Excluir</button>
-                ` : ""}
-            </div>
-        `;
-
-        div.appendChild(item);
-    });
-
-    ativarEventosLista(admin, matricula);
 }
