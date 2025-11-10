@@ -68,9 +68,14 @@ button:hover, .upload-btn:hover {
     box-shadow: 0 0 12px #00eaff;
 }
 
-/* Esconder input file */
+/* Ocultar input file */
 .upload input {
     display: none;
+}
+
+/* ✅ OCULTAR BOTÕES DE UPLOAD PARA USUÁRIOS COMUNS */
+.upload-btn {
+    display: none !important;  /* o JS libera para admin */
 }
 
 /* Tabela estilizada */
@@ -130,14 +135,4 @@ tr:hover {
     z-index: 999;
     box-shadow: 0 0 10px #00eaff;
     pointer-events: none;
-}
-
-/* OCULTAR BOTÕES DE UPLOAD PARA TODOS POR PADRÃO */
-.upload-btn {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    height: 0 !important;
-    overflow: hidden !important;
 }
