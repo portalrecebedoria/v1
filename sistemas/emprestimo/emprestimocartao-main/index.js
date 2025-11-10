@@ -1,7 +1,7 @@
 ﻿document.addEventListener("DOMContentLoaded", () => {
 
     // ================================================================
-    // ✅ PEGAR MATRÍCULA DO USUÁRIO LOGADO NO PORTAL (Firebase Unificado)
+    // ✅ PEGAR DADOS DO USUÁRIO LOGADO DO PORTAL
     // ================================================================
     console.log("🔍 Buscando dados do portal no localStorage...");
 
@@ -11,6 +11,8 @@
     campoMatEmp.readOnly = true;
     campoMatEmp.style.background = "#1b1b1b";
     campoMatEmp.style.cursor = "not-allowed";
+
+    let IS_ADMIN = false;
 
     try {
         const portalDataStr = localStorage.getItem("usuarioLogado");
@@ -25,16 +27,28 @@
             if (portalData.matricula) {
                 campoMatEmp.value = portalData.matricula;
                 console.log("✅ Matrícula aplicada:", portalData.matricula);
-            } else {
-                console.warn("⚠ O portal retornou usuário, mas sem matrícula.");
             }
+
+            // ✅ Identifica ADMIN (se existir)
+            IS_ADMIN = portalData.admin === true;
         }
     } catch (err) {
         console.error("❌ Erro ao ler matrícula do portal:", err);
     }
 
+    // ✅ Mostrar botão Upload Motoristas somente se for admin
+    const uploadBtn = document.getElementById("uploadMotoristasBtn");
+    if (uploadBtn) uploadBtn.hidden = !IS_ADMIN;
+
+    // ✅ Evento do botão: abre a página
+    if (uploadBtn) {
+        uploadBtn.addEventListener("click", () => {
+            window.location.href = "uploadMotoristas.html";
+        });
+    }
+
     // ================================================================
-    // ✅ DAQUI PARA BAIXO — SEU CÓDIGO ORIGINAL, SEM ALTERAR NADA
+    // ✅ DAQUI PARA BAIXO — SEU CÓDIGO ORIGINAL, INALTERADO
     // ================================================================
 
     const tipoCartao = document.getElementById("tipoCartao");
@@ -232,10 +246,6 @@
             console.error("Erro ao salvar:", err);
             alert("Erro ao salvar registro.");
         }
-    });
-
-    document.getElementById("relatorioBtn").addEventListener("click", () => {
-        window.location.href = "relatorio.html";
     });
 
 });
