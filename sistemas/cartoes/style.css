@@ -53,15 +53,22 @@ h1 {
 button, .upload-btn {
     background: linear-gradient(to right, #2b2b2b, #1a1a1a);
     color: #00eaff;
-    padding: 10px 15px;
-    border-radius: 8px;
+    padding: 6px 10px;              /* diminuído */
+    border-radius: 6px;             /* um pouco menor */
     border: 2px solid;
     border-image: linear-gradient(to right, #d3d3d3, #ffffff, #d3d3d3) 1;
     cursor: pointer;
     font-weight: bold;
+    font-size: 13px;                /* reduzido */
+    min-height: 34px;               /* evita ficar achatado */
+    display: inline-flex;           /* corrige corte */
+    align-items: center;            /* centraliza vertical */
+    justify-content: center;        /* centraliza horizontal */
+    white-space: nowrap;            /* evita quebra */
     transition: 0.25s;
 }
 
+/* Hover */
 button:hover, .upload-btn:hover {
     background: #00eaff;
     color: #000;
