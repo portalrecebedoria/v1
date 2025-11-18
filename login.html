@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -9,7 +9,7 @@
 </head>
 <body>
 
-  <!-- ?? �rea visual de alertas -->
+  <!-- 🔔 Área visual de alertas -->
   <div id="alertBox" class="alert-box"></div>
 
   <div class="login-container">
@@ -18,8 +18,8 @@
 
     <!-- Login -->
     <div id="loginForm">
-      <input type="text" id="loginMatricula" placeholder="??Matricula" required />
-      <input type="password" id="loginSenha" placeholder="??Senha" required />
+      <input type="text" id="loginMatricula" placeholder="🆔Matricula" required />
+      <input type="password" id="loginSenha" placeholder="🔐Senha" required />
       <button id="btnLogin">Entrar</button>
       <div class="toggle-link" id="showRegister">Criar uma conta</div>
     </div>
@@ -73,7 +73,7 @@
     });
 
     // =======================================================
-    // ?? Fun��o de alerta bonito
+    // 🔔 Função de alerta bonito
     // =======================================================
     function showAlert(message, type = "error") {
       const alertBox = document.getElementById("alertBox");
@@ -88,7 +88,19 @@
     }
 
     // =======================================================
-    // ?? LOGIN
+    // ⌨ ENTER faz login (ADICIONADO)
+    // =======================================================
+    document.addEventListener("keydown", (event) => {
+      const loginVisible = loginForm.style.display !== "none";
+
+      if (event.key === "Enter" && loginVisible) {
+        event.preventDefault();
+        document.getElementById("btnLogin").click();
+      }
+    });
+
+    // =======================================================
+    // 🔐 LOGIN
     // =======================================================
     document.getElementById("btnLogin").addEventListener("click", async () => {
       const matricula = document.getElementById("loginMatricula").value.trim();
@@ -106,7 +118,7 @@
     });
 
     // =======================================================
-    // ?? REGISTRO
+    // 📝 REGISTRO
     // =======================================================
     document.getElementById("btnRegistrar").addEventListener("click", async () => {
       const nome = document.getElementById("regNome").value.trim();
