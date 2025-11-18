@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Relatório de Diferenças</title>
+    <title>Relatorio de Diferencas</title>
 
     <link rel="stylesheet" href="styles.css" />
     <script type="module" src="app.js" defer></script>
@@ -15,9 +15,9 @@
 <header class="topbar">
     <div class="brand">
         <img src="assets/logo.png" alt="Logo" class="logo" />
-        <h1>Relatório de Diferenças</h1>
+        <h1>Relatorio de Diferencas</h1>
     </div>
-    <button id="btnAbrirRelatorios" class="btn outline">Relatórios</button>
+    <button id="btnAbrirRelatorios" class="btn outline">Relatorios</button>
 </header>
 
 <main class="container">
@@ -25,7 +25,7 @@
 
         <div class="grid">
 
-            <!-- ✅ RESUMO DO RECEBEDOR (NÃO ALTERADO) -->
+            <!-- RESUMO DO RECEBEDOR -->
             <aside class="card admin-only">
                 <div class="flex-between">
                     <h3>Resumo do Recebedor</h3>
@@ -34,7 +34,7 @@
 
                 <div id="resumoWrap" class="collapsed">
                     <div class="row">
-                        <label>Matrícula</label>
+                        <label>Matricula</label>
                         <select id="selectMatriculas"></select>
                     </div>
 
@@ -63,9 +63,9 @@
                 </div>
             </aside>
 
-            <!-- ✅ GERAR RELATÓRIO (NÃO ALTERADO) -->
+            <!-- GERAR RELATÓRIO -->
             <aside class="card">
-                <h3>Gerar Relatório</h3>
+                <h3>Gerar Relatorio</h3>
 
                 <div id="gerarRelatorioForm" class="admin-only" hidden>
                     <div class="row"><label>Matrícula</label><select id="matriculaForm"></select></div>
@@ -74,7 +74,7 @@
                     <div class="row"><label>Dinheiro</label><input id="valorDinheiro" type="number" step="0.01" /></div>
                     <div class="row"><label>Sobra/Falta</label><input id="sobraFalta" type="text" disabled /></div>
                     <div class="row"><label>Abastecimento</label><input id="abastecimento" type="number" /></div>
-                    <div class="row"><label>Observação</label><textarea id="observacao"></textarea></div>
+                    <div class="row"><label>Observacao</label><textarea id="observacao"></textarea></div>
 
                     <button id="btnSalvarRelatorio" class="btn primary">Salvar</button>
                 </div>
@@ -91,10 +91,15 @@
 
 <footer class="footer"></footer>
 
-<!-- ✅ MODAL PRINCIPAL DOS RELATÓRIOS -->
+<!-- MODAL PRINCIPAL DE RELATÓRIOS -->
 <dialog id="modalRelatorios" class="modal">
-    <form method="dialog" class="modal-content">
-        <h3>Relatórios</h3>
+    <div class="modal-content">
+
+        <!-- 🔥 Botão corrigido: ID agora é o mesmo do app.js -->
+        <div style="display:flex; align-items:center; justify-content:flex-start; gap:10px;">
+            <button id="btnFecharRelatorios" class="btn danger" type="button">Fechar</button>
+            <h3 style="margin:0;">Relatórios</h3>
+        </div>
 
         <div class="row admin-only">
             <label>Matrícula</label>
@@ -109,13 +114,10 @@
 
         <div id="listaRelatoriosModal" class="lista"></div>
 
-        <div class="row">
-            <button class="btn" type="submit">Fechar</button>
-        </div>
-    </form>
+    </div>
 </dialog>
 
-<!-- ✅ MODAL FLUTUANTE DE RESUMO DO RELATÓRIO -->
+<!-- MODAL RESUMO -->
 <dialog id="modalResumo" class="modal">
     <div class="modal-content">
         <h3>Resumo do Relatório</h3>
@@ -128,10 +130,10 @@
     </div>
 </dialog>
 
-<!-- ✅ MODAL DE PÓS-CONFERÊNCIA -->
+<!-- PÓS-CONFERÊNCIA -->
 <dialog id="posModal" class="modal">
     <form method="dialog" class="modal-content">
-        <h3>Pós-Conferência</h3>
+        <h3>Pos-Conferencia</h3>
 
         <textarea id="posTexto" rows="6"></textarea>
 
@@ -143,4 +145,5 @@
 </dialog>
 
 </body>
+
 </html>

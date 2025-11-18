@@ -37,7 +37,7 @@ const btnVerAvisosAdmin = document.getElementById("btnVerAvisosAdmin");
 const modalAdminAvisos = document.getElementById("modalAdminAvisos");
 const adminAvisosLista = document.getElementById("adminAvisosLista");
 
-// ✅ Nome vira botão do painel admin
+// Nome vira botão do painel admin
 const btnToggleAdmin = nomeEl;
 
 let usuarioAtual = null;
@@ -45,7 +45,7 @@ let chartMensal = null;
 let matriculaAtual = null;
 let adminPanelExpanded = false;
 
-// --- LOGIN STATE ---
+// ---------------- LOGIN ----------------
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "../../login.html";
@@ -69,7 +69,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// --- PERFIL ---
+// ---------------- PERFIL ----------------
 async function carregarPerfil(dados) {
   const matriculasRosa = ["8789", "9003", "6414", "5271"];
   nomeEl.textContent = dados.nome;
@@ -105,7 +105,7 @@ async function carregarPerfil(dados) {
   });
 }
 
-// --- AVISOS FUNCIONÁRIO ---
+// ---------------- AVISOS FUNCIONÁRIO ----------------
 async function carregarAvisos(matricula) {
   const q = query(collection(db, "avisos"), where("matricula", "==", matricula));
   const snap = await getDocs(q);
@@ -123,19 +123,53 @@ async function carregarAvisos(matricula) {
 
   avisosLista.innerHTML = "";
   snap.forEach((d) => {
+    const data = d.data();
     const p = document.createElement("p");
-    p.textContent = d.data().texto;
-    p.style.color = "#fff"; // ✅ texto branco
+    p.style.color = "#fff";
+
+    let visto = "";
+    if (data.vistoEm) {
+      const dt = data.vistoEm.toDate();
+      visto = ` — visto em ${dt.toLocaleDateString("pt-BR")} ${dt.toLocaleTimeString("pt-BR")}`;
+    }
+
+    p.textContent = `${data.texto}${visto}`;
     avisosLista.appendChild(p);
   });
 }
 
-btnAvisos.addEventListener("click", () => {
+// 🔥 Marca todos os avisos como vistos (apenas a primeira vez)
+async function marcarAvisosComoVistos(matricula) {
+  const q = query(collection(db, "avisos"), where("matricula", "==", matricula));
+  const snap = await getDocs(q);
+
+  const agora = new Date();
+
+  for (const docSnap of snap.docs) {
+    const data = docSnap.data();
+
+    // 👉 Só grava a primeira visualização
+    if (!data.vistoEm) {
+      await updateDoc(doc(db, "avisos", docSnap.id), {
+        vistoEm: agora
+      });
+    }
+  }
+}
+
+btnAvisos.addEventListener("click", async () => {
   modalAvisos.showModal();
+
+  // 🔥 Marca como visto ao abrir
+  await marcarAvisosComoVistos(matriculaAtual);
+
   btnAvisos.classList.remove("blink", "aviso-vermelho");
+
+  // Atualiza lista com timestamps
+  carregarAvisos(matriculaAtual);
 });
 
-// --- GRÁFICO INDIVIDUAL ---
+// ---------------- GRÁFICO ----------------
 async function carregarGraficoIndividual(matricula, mesEscolhido = null) {
   const relatoriosRef = collection(db, "relatorios");
   const agora = new Date();
@@ -165,7 +199,6 @@ async function carregarGraficoIndividual(matricula, mesEscolhido = null) {
 
       if (!dias[dia]) dias[dia] = { abastecimentos: 0, valorFolha: 0 };
 
-      // 🔹 Soma do campo "abastecimento" em vez de contar documentos
       dias[dia].abastecimentos += Number(r.abastecimento || 0);
       dias[dia].valorFolha += Number(r.valorFolha || 0);
 
@@ -216,35 +249,9 @@ async function carregarGraficoIndividual(matricula, mesEscolhido = null) {
       options: {
         maintainAspectRatio: false,
         responsive: true,
-        plugins: {
-          legend: {
-            labels: { color: "#fff", font: { size: 14 } }
-          },
-          tooltip: {
-            mode: "index",
-            intersect: false,
-            backgroundColor: "rgba(0,0,0,0.9)",
-            titleColor: "#00f5ff",
-            bodyColor: "#fff",
-            borderColor: "#00f5ff",
-            borderWidth: 1
-          }
-        },
         scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { color: "#888" },
-            grid: { color: "rgba(0,128,128,0.2)", borderDash: [4, 2] }
-          },
-          y1: {
-            position: "right",
-            ticks: { color: "#00f5ff" },
-            grid: { drawOnChartArea: false }
-          },
-          x: {
-            ticks: { color: "#fff" },
-            grid: { color: "rgba(255,255,255,0.05)" }
-          }
+          y: { beginAtZero: true },
+          y1: { position: "right" }
         }
       }
     });
@@ -252,16 +259,15 @@ async function carregarGraficoIndividual(matricula, mesEscolhido = null) {
     totalInfoEl.innerHTML = `
       <div class="resumo">
         <span class="abastecimentos">Abastecimentos: ${totalAbastecimentos}</span>
-        <span class="dinheiro">Dinheiro: R$ ${totalDinheiro.toLocaleString(
-          "pt-BR",
-          { minimumFractionDigits: 2 }
-        )}</span>
+        <span class="dinheiro">Dinheiro: R$ ${totalDinheiro.toLocaleString("pt-BR", {
+          minimumFractionDigits: 2
+        })}</span>
       </div>
     `;
   });
 }
 
-// --- ADMIN ---
+// ---------------- ADMIN ----------------
 async function carregarMatriculasAdmin() {
   const q = query(collection(db, "users"));
   const snap = await getDocs(q);
@@ -287,7 +293,6 @@ btnSalvarHorario.addEventListener("click", async () => {
     const userDoc = snap.docs[0];
     await updateDoc(userDoc.ref, { horarioTrabalho: horario });
 
-    // ✅ Atualiza instantaneamente
     if (matriculaAtual === matricula) horarioEl.textContent = horario;
 
     alert("Horário salvo com sucesso!");
@@ -302,18 +307,18 @@ btnSalvarAviso.addEventListener("click", async () => {
   await addDoc(collection(db, "avisos"), {
     matricula,
     texto,
-    criadoEm: serverTimestamp()
+    criadoEm: serverTimestamp(),
+    vistoEm: null // 🔥 novo aviso começa como não visto
   });
 
   adminAvisoInput.value = "";
 
-  // ✅ Atualiza avisos imediatamente
   if (matriculaAtual === matricula) carregarAvisos(matriculaAtual);
 
   alert("Aviso salvo com sucesso!");
 });
 
-// --- ADMIN MODAL COM EDIT/DELETE ---
+// ADMIN lista + vistoEm mostrado
 btnVerAvisosAdmin.addEventListener("click", async () => {
   modalAdminAvisos.showModal();
   const snap = await getDocs(collection(db, "avisos"));
@@ -324,7 +329,13 @@ btnVerAvisosAdmin.addEventListener("click", async () => {
     const p = document.createElement("p");
     p.style.color = "#fff";
 
-    p.innerHTML = `<strong>${d.matricula}:</strong> ${d.texto} `;
+    let visto = "";
+    if (d.vistoEm) {
+      const dt = d.vistoEm.toDate();
+      visto = ` — visto em ${dt.toLocaleDateString("pt-BR")} ${dt.toLocaleTimeString("pt-BR")}`;
+    }
+
+    p.innerHTML = `<strong>${d.matricula}:</strong> ${d.texto}${visto} `;
 
     const btnEditar = document.createElement("button");
     btnEditar.textContent = "Editar";
@@ -353,13 +364,13 @@ btnVerAvisosAdmin.addEventListener("click", async () => {
   });
 });
 
-// --- TOGGLE PAINEL ADMIN ---
+// ---------------- Toggle painel admin ----------------
 btnToggleAdmin.addEventListener("click", () => {
   adminPanelExpanded = !adminPanelExpanded;
   adminControls.style.display = adminPanelExpanded ? "flex" : "none";
 });
 
-// --- RESPOSTA À BARRA LATERAL DO PORTAL ---
+// ---------------- Sidebar integração ----------------
 window.addEventListener("message", (event) => {
   if (event.data === "sidebarOpened") {
     document.body.classList.add("sidebar-open");
