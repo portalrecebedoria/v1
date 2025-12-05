@@ -11,14 +11,10 @@ body {
     background-color: #121212;
     color: #E0E0E0;
     min-height: 100vh;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    padding: 20px;
-
-    /* 🔹 Escala geral reduzida (equivalente a ~75%) */
-    transform: scale(0.75);
-    transform-origin: top left;
+    align-items: center;
 }
 
 /* ===== Cabeçalho ===== */
@@ -33,25 +29,20 @@ header {
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     margin-bottom: 25px;
-
-    /* 🔹 Adiciona deslocamento para a direita */
-    margin-left: 350px;
 }
 
 header img.logo {
-    height: 70px; /* logo maior */
+    height: 70px;
 }
 
 header h1 {
     flex-grow: 1;
     font-size: 2rem;
     color: #00ff7f;
-    text-align: center; /* título centralizado */
+    text-align: center;
     background-color: #222;
     padding: 10px 20px;
     border-radius: 10px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 header button {
@@ -77,11 +68,8 @@ form {
     box-shadow: 0 4px 12px rgba(0,0,0,0.6);
     width: 100%;
     max-width: 650px;
-
-    /* 🔹 desloca o formulário para a direita */
-    margin-left: 350px; /*ajuste valor conforme quiser*/
+    margin-bottom: 25px;
 }
-
 
 .form-group {
     margin-bottom: 15px;
@@ -151,16 +139,18 @@ main {
     align-items: flex-start;
 }
 
-/* Estoque */
+/* ===== Estoque ===== */
 #estoque {
-    margin-right: auto; /* colado na margem esquerda */
-    flex-shrink: 0;
     width: 260px;
-    background: #1e1e1e;       /* fundo igual do relatório */
-    padding: 15px;             /* espaço interno igual */
-    border-radius: 10px;       /* borda arredondada igual */
+    background: #1e1e1e;
+    padding: 15px;
+    border-radius: 10px;
     color: #e0e0e0;
-    height: fit-content;       /* altura ajusta ao conteúdo */
+    height: fit-content;
+}
+
+#estoque h2 {
+    color: #00ff7f;
 }
 
 #estoqueConteudo {
@@ -183,22 +173,10 @@ main {
     filter: brightness(1.05);
 }
 
-.cardEstoque h3 {
-    margin: 0 0 8px 0;
-    font-size: 1rem;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(255,255,255,0.2);
-}
-
-
-/* Bordos com cores novas */
+/* Bordos com cores */
 .cardEstoque:nth-child(1) h3 { color: #FFD700; }
 .cardEstoque:nth-child(2) h3 { color: #00FF7F; }
 .cardEstoque:nth-child(3) h3 { color: #87CEFA; }
-
-.cardEstoque p b { color: #FFFFFF; text-shadow: 0 0 2px rgba(255,255,255,0.5); }
-.cardEstoque p b.disponivel { color: #00CED1; }
-.cardEstoque p b.emprestado { color: #FF6347; }
 
 /* ===== Relatório ===== */
 .exportBtn {
@@ -215,23 +193,20 @@ main {
 
 table {
     flex: 1;
-    margin-left: 0; /* relatório puxado para a esquerda */
     border-collapse: collapse;
     background: #1f1f1f;
     border-radius: 8px;
     overflow: hidden;
     margin-top: 20px;
-    table-layout: auto; /* deixa colunas se expandirem conforme conteúdo */
-    width: 100%; /* ocupa toda a largura disponível do container */
+    width: 100%;
+    table-layout: auto;
 }
 
 th, td {
-    padding: 2px 15px; /* diminui altura das linhas */
-    text-align: left;
+    padding: 6px 12px;
     border-bottom: 1px solid #333;
     font-size: 0.95rem;
     color: #e0e0e0;
-    min-width: 140px; /* largura mínima de cada célula para ficarem mais compridas */
 }
 
 th {
@@ -239,41 +214,46 @@ th {
     color: #111;
 }
 
-tr:hover { background-color: #333; }
+tr:hover {
+    background-color: #333;
+}
 
-td.matricula { font-weight: bold; text-align: center; }
+td.matricula {
+    font-weight: bold;
+    text-align: center;
+}
 
 /* ===== Responsivo ===== */
 @media (max-width: 900px) {
-    header img.logo { height: 60px; }
-    header h1 { font-size: 1.8rem; padding: 8px 15px; }
-    main { flex-direction: column; align-items: flex-start; }
-    #estoque { width: 100%; margin-top: 20px; margin-left: 0; }
+    main {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #estoque {
+        width: 100%;
+    }
+
+    header h1 {
+        font-size: 1.5rem;
+    }
 }
 
-#estoque h2 {
-    color: #00ff7f; /* define a cor verde metálico */
-}
-
-.statusBtn {
-    font-weight: bold; /* texto em negrito */
-}
-
+/* ===== Rodapé ===== */
 .footer {
     width: 100%;
     text-align: center;
     padding: 10px 0;
-    color: #888;          /* cor discreta */
+    color: #888;
     font-size: 0.9rem;
     margin-top: 20px;
 }
 
+/* ===== Upload motoristas ===== */
 #uploadMotoristasBtn {
     display: inline-block !important;
     opacity: 1 !important;
     pointer-events: all !important;
-
-    /* Pode estilizar como quiser: */
     padding: 10px 20px;
     background: #00aaff;
     color: white;
